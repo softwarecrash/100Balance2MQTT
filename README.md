@@ -1,4 +1,4 @@
-# 100Balance2MQTT
+# 100Balance2MQTT [![GitHub release](https://img.shields.io/github/release/softwarecrash/100Balance2MQTT?include_prereleases=&sort=semver&color=blue)](https://github.com/softwarecrash/100Balance2MQTT/releases/latest)
 Little Program for ESP82XX to get the 100Balance BMS data to web and MQTT
 
 # Features:
