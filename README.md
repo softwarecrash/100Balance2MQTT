@@ -12,28 +12,25 @@ Little Program for ESP82XX to get the 100Balance BMS data to web and MQTT
 - debug log on Wemos USB (use only if you **don't** supply Wemos from BMS!!!)
 - wake the BMS over MQTT or keep it awake (not supported on ESP-01s)
 - universal switching output (only with external power supply, not supported on ESP-01s)
-- [blink codes](https://github.com/softwarecrash/Daly2MQTT/wiki/Blink-Codes) for the current state of the ESP (not supported on ESP-01s)
-- [Homeassistant Discovery](https://github.com/softwarecrash/Daly2MQTT/wiki/HomeAssistant-integration)
-- [External Temperatur Sensors](https://github.com/softwarecrash/Daly2MQTT/wiki/Wiring-temperature-sensors)
+- [blink codes](https://github.com/softwarecrash/100Balance2MQTT/wiki/Blink-Codes) for the current state of the ESP (not supported on ESP-01s)
+- [Homeassistant Discovery](https://github.com/softwarecrash/100Balance2MQTT/wiki/HomeAssistant-integration)
+- [External Temperatur Sensors](https://github.com/softwarecrash/100Balance2MQTT/wiki/Wiring-temperature-sensors)
 - with Teapod
 
 
 **Main screen:**
 
-![grafik](https://user-images.githubusercontent.com/17761850/227793485-cdc02fcf-d10e-471e-a1d9-a0fc15785f66.gif)
----
-  
-![Daly-Cells](https://github.com/softwarecrash/Daly2MQTT/assets/17761850/d16ea396-db2d-427f-9f68-13151c13d22d)
+![image](https://github.com/softwarecrash/100Balance2MQTT/assets/17761850/630b63fa-9093-43e7-a2c0-d4f8648c7ebe)
 
 
 **Settings:**
 
-![grafik](https://user-images.githubusercontent.com/44615614/212401754-81a16130-f24d-4c8a-babc-d18d112fad5a.png)
+![image](https://github.com/softwarecrash/100Balance2MQTT/assets/17761850/f4839109-6d31-4f6b-bfdb-c29350f29c0a)
 
 
 **Config:**
 
-![grafik](https://user-images.githubusercontent.com/17761850/227793333-5e51fc9b-d535-4345-882c-adb758e8bf6d.gif)
+![image](https://github.com/softwarecrash/100Balance2MQTT/assets/17761850/4b4e9e07-cb65-441c-9ec6-e8e2df84f7c1)
 
 
 **MQTT Data**
@@ -43,7 +40,7 @@ Little Program for ESP82XX to get the 100Balance BMS data to web and MQTT
 
 # How to use:
 - flash the bin file to an ESP8266 (recommended Wemos D1 Mini) with [Tasmotizer](https://github.com/tasmota/tasmotizer/releases)
-- connect the ESP like the [wiring diagram](https://github.com/softwarecrash/Daly2MQTT/wiki/Wiring)
+- connect the ESP like the [wiring diagram](https://github.com/softwarecrash/100Balance2MQTT/wiki/Wiring)
 - search for the wifi ap "100Balance2MQTT-AP" and connect to it
 - surf to 192.168.4.1 and set up your wifi and optional MQTT
 - that's it :)
@@ -52,7 +49,8 @@ Little Program for ESP82XX to get the 100Balance BMS data to web and MQTT
 
 You are welcome to get fully stocked and tested PCB's. These are then already loaded with the lastest firmware. The earnings from the PCBs are used for the further development of existing and new projects.
 
-[![Daly-BMS-MQTT-PCB](https://user-images.githubusercontent.com/17761850/233857094-38f22d6f-4d74-4643-b426-182fc4dc9a44.png)](https://all-solutions.store)
+[![Daly2MQTT-PCB](https://github.com/softwarecrash/100Balance2MQTT/assets/17761850/22e8c226-9603-464c-b1d4-0f7c043b77b4)](https://all-solutions.store)
+
 
 If interested see [here](https://all-solutions.store)
 
