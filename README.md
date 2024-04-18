@@ -1,5 +1,5 @@
 # 100Balance2MQTT
-Little Program for ESP82XX to get the Daly BMS data to web and MQTT
+Little Program for ESP82XX to get the 100Balance BMS data to web and MQTT
 
 # Features:
 - captive portal for wifi and MQTT config
@@ -44,7 +44,7 @@ Little Program for ESP82XX to get the Daly BMS data to web and MQTT
 # How to use:
 - flash the bin file to an ESP8266 (recommended Wemos D1 Mini) with [Tasmotizer](https://github.com/tasmota/tasmotizer/releases)
 - connect the ESP like the [wiring diagram](https://github.com/softwarecrash/Daly2MQTT/wiki/Wiring)
-- search for the wifi ap "Daly2MQTT-AP" and connect to it
+- search for the wifi ap "100Balance2MQTT-AP" and connect to it
 - surf to 192.168.4.1 and set up your wifi and optional MQTT
 - that's it :)
 
@@ -56,7 +56,6 @@ You are welcome to get fully stocked and tested PCB's. These are then already lo
 
 If interested see [here](https://all-solutions.store)
 
-**NEW:** The new PCB's (v2) are now completely galvanically isolated from the BMS when operating with an external power supply.
 
 # Questions? 
 [Join the Discord Channel (German / English)](https://discord.gg/7gTJk22JDE)
