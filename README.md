@@ -1,7 +1,7 @@
 # 100Balance2MQTT [![GitHub release](https://img.shields.io/github/release/softwarecrash/100Balance2MQTT?include_prereleases=&sort=semver&color=blue)](https://github.com/softwarecrash/100Balance2MQTT/releases/latest)
 Little Program for ESP82XX to get the 100Balance BMS data to web and MQTT
 
-:warning: This firmware requires a license for full functionality. The license is valid for the lifetime of the BMS used. If you set up the Wemos and cable yourself, you can purchase the license at https://all-solutions.store/license ( when purchasing the PCBs in the store, it is automatically included). 
+:warning: This firmware requires a license for full functionality. The license is valid for the lifetime of the BMS used. If you set up the Wemos and cable yourself, you can purchase the license at https://all-solutions.store/license (when purchasing the PCBs in the store, it is automatically included). 
 
 
 # Features:
