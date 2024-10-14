@@ -79,6 +79,7 @@ jobs:
           total=$(grep -vc '^$' bin_files.txt)
           while read file; do
             if [[ "$file" != *"OTA"* ]]; then
+              # Variant Name korrekt extrahieren
               variant_name=$(echo $file | sed -E 's/^[^_]+_(.*)_[^_]+\.bin$/\1/')
               display_name=$(echo $variant_name | tr '_' ' ' | sed -e 's/\b\(.\)/\u\1/g')
               echo '  {' >> variants.json
@@ -96,13 +97,6 @@ jobs:
           echo ']' >> variants.json
           rm bin_files.txt
 
-      - name: Commit and Push Changes
-        run: |
-          cd Flash2MQTT
-          git add firmware/${{ github.event.repository.name }}
-          git commit -m "Update firmware for ${{ github.event.repository.name }} to version ${{ github.event.release.tag_name }}"
-          git push https://all-solutions:${{ secrets.CENTRAL_REPO_TOKEN }}@github.com/all-solutions/Flash2MQTT.git HEAD:master
-
       - name: Update firmware_list.json
         run: |
           cd Flash2MQTT/firmware
@@ -110,15 +104,33 @@ jobs:
           if ! command -v jq &> /dev/null; then
             sudo apt-get update && sudo apt-get install -y jq
           fi
-          # Update the version in firmware_list.json
+          # Initialize firmware_list.json if it doesn't exist
           if [ ! -f firmware_list.json ]; then
             echo '[]' > firmware_list.json
           fi
+          # Set variables
+          name="${{ github.event.repository.name }}"
+          version="${{ github.event.release.tag_name }}"
+          # Remove 'v' or 'V' prefix from version if present
+          version="${version#v}"
+          version="${version#V}"
+          # Output variable values for debugging
+          echo "Repository Name: $name"
+          echo "Release Version: $version"
+          # Update firmware_list.json
           tmpfile=$(mktemp)
           jq --arg name "$name" --arg version "$version" \
             'if any(.[]; .name == $name) then map(if .name == $name then .version = $version else . end) else . + [{"name": $name, "version": $version}] end' \
             firmware_list.json > "$tmpfile" && mv "$tmpfile" firmware_list.json
           cd ..
           git add firmware/firmware_list.json
-          git commit -m "Update firmware_list.json with new version of ${{ github.event.repository.name }}"
+          git commit -m "Update firmware_list.json with new version of $name"
           git push https://all-solutions:${{ secrets.CENTRAL_REPO_TOKEN }}@github.com/all-solutions/Flash2MQTT.git HEAD:master
+
+      - name: Commit and Push Changes
+        run: |
+          cd Flash2MQTT
+          git add firmware/${{ github.event.repository.name }}
+          git commit -m "Update firmware for ${{ github.event.repository.name }} to version $version"
+          git push https://all-solutions:${{ secrets.CENTRAL_REPO_TOKEN }}@github.com/all-solutions/Flash2MQTT.git HEAD:master
+
