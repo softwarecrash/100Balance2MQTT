@@ -70,7 +70,7 @@ jobs:
       - name: Install jq
         run: sudo apt-get update && sudo apt-get install -y jq
 
-      - name: Update variants.json
+      - name: Update variants.json and firmware_list.json
         run: |
           cd Flash2MQTT/firmware/${{ github.event.repository.name }}
           ls *.bin > bin_files.txt
@@ -97,13 +97,8 @@ jobs:
           echo ']' >> variants.json
           rm bin_files.txt
 
-      - name: Update firmware_list.json
-        run: |
-          cd Flash2MQTT/firmware
-          # Install jq if not already installed
-          if ! command -v jq &> /dev/null; then
-            sudo apt-get update && sudo apt-get install -y jq
-          fi
+          # Update firmware_list.json
+          cd ..
           # Initialize firmware_list.json if it doesn't exist
           if [ ! -f firmware_list.json ]; then
             echo '[]' > firmware_list.json
@@ -122,15 +117,14 @@ jobs:
           jq --arg name "$name" --arg version "$version" \
             'if any(.[]; .name == $name) then map(if .name == $name then .version = $version else . end) else . + [{"name": $name, "version": $version}] end' \
             firmware_list.json > "$tmpfile" && mv "$tmpfile" firmware_list.json
-          cd ..
-          git add firmware/firmware_list.json
-          git commit -m "Update firmware_list.json with new version of $name"
-          git push https://all-solutions:${{ secrets.CENTRAL_REPO_TOKEN }}@github.com/all-solutions/Flash2MQTT.git HEAD:master
 
       - name: Commit and Push Changes
         run: |
           cd Flash2MQTT
           git add firmware/${{ github.event.repository.name }}
+          git add firmware/firmware_list.json
           git commit -m "Update firmware for ${{ github.event.repository.name }} to version $version"
-          git push https://all-solutions:${{ secrets.CENTRAL_REPO_TOKEN }}@github.com/all-solutions/Flash2MQTT.git HEAD:master
+          git pull --rebase origin main
+          git push https://all-solutions:${{ secrets.CENTRAL_REPO_TOKEN }}@github.com/all-solutions/Flash2MQTT.git HEAD:main
+
 
