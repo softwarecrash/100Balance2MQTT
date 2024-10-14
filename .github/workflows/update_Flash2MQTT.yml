@@ -79,7 +79,7 @@ jobs:
           total=$(grep -vc '^$' bin_files.txt)
           while read file; do
             if [[ "$file" != *"OTA"* ]]; then
-              variant_name=$(echo $file | sed -e 's/.*_\([^_]*\)\.bin/\1/')
+              variant_name=$(echo $file | sed -E 's/^[^_]+_(.*)_[^_]+\.bin$/\1/')
               display_name=$(echo $variant_name | tr '_' ' ' | sed -e 's/\b\(.\)/\u\1/g')
               echo '  {' >> variants.json
               echo '    "displayName": "'"$display_name"'",' >> variants.json
@@ -115,8 +115,8 @@ jobs:
             echo '[]' > firmware_list.json
           fi
           tmpfile=$(mktemp)
-          jq --arg name "${{ github.event.repository.name }}" --arg version "${{ github.event.release.tag_name }}" \
-            'if any(.name == $name; .) then (map(if .name == $name then .version = $version else . end)) else . + [{"name": $name, "version": $version}] end' \
+          jq --arg name "$name" --arg version "$version" \
+            'if any(.[]; .name == $name) then map(if .name == $name then .version = $version else . end) else . + [{"name": $name, "version": $version}] end' \
             firmware_list.json > "$tmpfile" && mv "$tmpfile" firmware_list.json
           cd ..
           git add firmware/firmware_list.json
