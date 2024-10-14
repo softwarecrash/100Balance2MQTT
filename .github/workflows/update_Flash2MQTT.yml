@@ -71,30 +71,52 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y jq
 
       - name: Update variants.json and firmware_list.json
+        env:
+          FIRMWARE_NAME: ${{ github.event.repository.name }}
+          RELEASE_VERSION: ${{ github.event.release.tag_name }}
         run: |
-          cd Flash2MQTT/firmware/${{ github.event.repository.name }}
-          firmware_name="${{ github.event.repository.name }}"
+          cd Flash2MQTT/firmware/${FIRMWARE_NAME}
           ls *.bin > bin_files.txt
           # Initialize variables
           total=0
           count=0
+          # Remove 'v' or 'V' prefix from version if present
+          version="${RELEASE_VERSION#v}"
+          version="${version#V}"
+          echo "Firmware Name: $FIRMWARE_NAME"
+          echo "Release Version: $version"
           # Determine total number of desired variants
+          echo "Determining total number of desired variants..."
           while read file; do
-            if [[ "$file" == *"_${{ github.event.release.tag_name }}.bin" ]]; then
-              variant_part=$(echo "$file" | sed -E 's/^'"$firmware_name"'_//; s/_'"${{ github.event.release.tag_name }}"'\.bin$//')
+            echo "Processing file: $file"
+            if [[ "$file" == *"_${version}.bin" ]]; then
+              echo "File matches current release version."
+              variant_part=$(echo "$file" | sed -E 's/^'"$FIRMWARE_NAME"'_//; s/_'"${version}"'\.bin$//')
               variant_name="${variant_part%%_*}" # Extract the base variant name
+              echo "Extracted variant_name: $variant_name"
               if [[ "$variant_name" == "d1_mini" || "$variant_name" == "esp01" ]]; then
+                echo "Variant $variant_name is desired. Incrementing total."
                 total=$((total + 1))
+              else
+                echo "Variant $variant_name is not desired."
               fi
+            else
+              echo "File does not match current release version."
             fi
           done < bin_files.txt
+          echo "Total desired variants: $total"
+
           # Start building variants.json
           echo '[' > variants.json
           # Process files and create variants.json
+          echo "Building variants.json..."
           while read file; do
-            if [[ "$file" == *"_${{ github.event.release.tag_name }}.bin" ]]; then
-              variant_part=$(echo "$file" | sed -E 's/^'"$firmware_name"'_//; s/_'"${{ github.event.release.tag_name }}"'\.bin$//')
+            echo "Processing file: $file"
+            if [[ "$file" == *"_${version}.bin" ]]; then
+              echo "File matches current release version."
+              variant_part=$(echo "$file" | sed -E 's/^'"$FIRMWARE_NAME"'_//; s/_'"${version}"'\.bin$//')
               variant_name="${variant_part%%_*}" # Extract the base variant name
+              echo "Extracted variant_name: $variant_name"
               case "$variant_name" in
                 "d1_mini")
                   display_name="D1 Mini"
@@ -103,19 +125,22 @@ jobs:
                   display_name="ESP-01"
                   ;;
                 *)
-                  # Skip unwanted variants
+                  echo "Variant $variant_name is not desired. Skipping."
                   continue
                   ;;
               esac
               count=$((count + 1))
+              echo "Adding variant $display_name to variants.json."
               echo '  {' >> variants.json
               echo '    "displayName": "'"$display_name"'",' >> variants.json
-              echo '    "file": "https://all-solutions.github.io/Flash2MQTT/firmware/'"$firmware_name"'/'"$file"'"' >> variants.json
+              echo '    "file": "https://all-solutions.github.io/Flash2MQTT/firmware/'"$FIRMWARE_NAME"'/'"$file"'"' >> variants.json
               if [ $count -lt $total ]; then
                 echo '  },' >> variants.json
               else
                 echo '  }' >> variants.json
               fi
+            else
+              echo "File does not match current release version."
             fi
           done < bin_files.txt
           echo ']' >> variants.json
@@ -131,18 +156,9 @@ jobs:
           if [ ! -f firmware_list.json ]; then
             echo '[]' > firmware_list.json
           fi
-          # Set variables
-          name="${{ github.event.repository.name }}"
-          version="${{ github.event.release.tag_name }}"
-          # Remove 'v' or 'V' prefix from version if present
-          version="${version#v}"
-          version="${version#V}"
-          # Output variable values for debugging
-          echo "Repository Name: $name"
-          echo "Release Version: $version"
           # Update firmware_list.json
           tmpfile=$(mktemp)
-          jq --arg name "$name" --arg version "$version" \
+          jq --arg name "$FIRMWARE_NAME" --arg version "$version" \
             'if any(.[]; .name == $name) then map(if .name == $name then .version = $version else . end) else . + [{"name": $name, "version": $version}] end' \
             firmware_list.json > "$tmpfile" && mv "$tmpfile" firmware_list.json
 
