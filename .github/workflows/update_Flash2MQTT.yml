@@ -1,4 +1,4 @@
-name: Update Flash2MQTT Firmware Repository
+name: Update Central Firmware Repository
 
 on:
   release:
@@ -21,21 +21,54 @@ jobs:
           git clone https://all-solutions:${{ secrets.CENTRAL_REPO_TOKEN }}@github.com/all-solutions/Flash2MQTT.git Flash2MQTT
 
       - name: Download Firmware Assets
-        uses: whoan/actions-download-release@v1.4.0
+        uses: actions/github-script@v6
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          repository: ${{ github.repository }}
-          tag: ${{ github.event.release.tag_name }}
-          file_glob: '*.bin'
-          output_dir: './firmware'
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const releaseTag = context.payload.release.tag_name;
+
+            // Get the release by tag name
+            const release = await github.rest.repos.getReleaseByTag({
+              owner,
+              repo,
+              tag: releaseTag,
+            });
+
+            // Filter assets that end with .bin
+            const assets = release.data.assets.filter(asset => asset.name.endsWith('.bin'));
+
+            if (assets.length === 0) {
+              core.setFailed('No .bin assets found in the release.');
+            }
+
+            for (const asset of assets) {
+              const download = await github.rest.repos.getReleaseAsset({
+                owner,
+                repo,
+                asset_id: asset.id,
+                headers: {
+                  Accept: 'application/octet-stream',
+                },
+              });
+
+              // Write the asset to a file
+              fs.writeFileSync(asset.name, Buffer.from(download.data));
+              console.log(`Downloaded ${asset.name}`);
+            }
 
       - name: List Downloaded Files
-        run: ls -la ./firmware
+        run: ls -la
 
       - name: Copy Firmware Files
         run: |
           mkdir -p Flash2MQTT/firmware/${{ github.event.repository.name }}
-          cp ./firmware/*.bin Flash2MQTT/firmware/${{ github.event.repository.name }}/
+          cp *.bin Flash2MQTT/firmware/${{ github.event.repository.name }}/
+
+      - name: Install jq
+        run: sudo apt-get update && sudo apt-get install -y jq
 
       - name: Update variants.json
         run: |
@@ -73,7 +106,11 @@ jobs:
       - name: Update firmware_list.json
         run: |
           cd Flash2MQTT/firmware
-          # Aktualisiere die Version in firmware_list.json
+          # Install jq if not already installed
+          if ! command -v jq &> /dev/null; then
+            sudo apt-get update && sudo apt-get install -y jq
+          fi
+          # Update the version in firmware_list.json
           if [ ! -f firmware_list.json ]; then
             echo '[]' > firmware_list.json
           fi
