@@ -80,8 +80,9 @@ jobs:
           count=0
           # Determine total number of desired variants
           while read file; do
-            if [[ "$file" != *"OTA"* ]]; then
-              variant_name=$(echo "$file" | sed -E 's/^'"$firmware_name"'_//; s/(_[^_]*)?\.bin$//')
+            if [[ "$file" == *"_${{ github.event.release.tag_name }}.bin" ]]; then
+              variant_part=$(echo "$file" | sed -E 's/^'"$firmware_name"'_//; s/_'"${{ github.event.release.tag_name }}"'\.bin$//')
+              variant_name="${variant_part%%_*}" # Extract the base variant name
               if [[ "$variant_name" == "d1_mini" || "$variant_name" == "esp01" ]]; then
                 total=$((total + 1))
               fi
@@ -91,8 +92,9 @@ jobs:
           echo '[' > variants.json
           # Process files and create variants.json
           while read file; do
-            if [[ "$file" != *"OTA"* ]]; then
-              variant_name=$(echo "$file" | sed -E 's/^'"$firmware_name"'_//; s/(_[^_]*)?\.bin$//')
+            if [[ "$file" == *"_${{ github.event.release.tag_name }}.bin" ]]; then
+              variant_part=$(echo "$file" | sed -E 's/^'"$firmware_name"'_//; s/_'"${{ github.event.release.tag_name }}"'\.bin$//')
+              variant_name="${variant_part%%_*}" # Extract the base variant name
               case "$variant_name" in
                 "d1_mini")
                   display_name="D1 Mini"
@@ -152,3 +154,4 @@ jobs:
           git commit -m "Update firmware for ${{ github.event.repository.name }} to version $version"
           git pull --rebase origin main
           git push https://all-solutions:${{ secrets.CENTRAL_REPO_TOKEN }}@github.com/all-solutions/Flash2MQTT.git HEAD:main
+
