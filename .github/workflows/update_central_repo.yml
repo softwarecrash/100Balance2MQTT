@@ -21,26 +21,21 @@ jobs:
           git clone https://all-solutions:${{ secrets.CENTRAL_REPO_TOKEN }}@github.com/all-solutions/Flash2MQTT.git Flash2MQTT
 
       - name: Download Firmware Assets
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          echo "Downloading firmware assets from the latest release"
-          release_id=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
-            "https://api.github.com/repos/${{ github.repository }}/releases/latest" | jq -r .id)
-          assets=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
-            "https://api.github.com/repos/${{ github.repository }}/releases/$release_id/assets" | jq -r '.[] | select(.name | endswith(".bin")) | .id')
-          for asset_id in $assets; do
-            asset_url="https://api.github.com/repos/${{ github.repository }}/releases/assets/$asset_id"
-            asset_name=$(curl -s -H "Authorization: token $GITHUB_TOKEN" "$asset_url" | jq -r .name)
-            echo "Downloading $asset_name"
-            curl -L -H "Authorization: token $GITHUB_TOKEN" -H 'Accept: application/octet-stream' \
-              "$asset_url" -o "$asset_name"
-          done
+        uses: whoan/actions-download-release@v1.4.0
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          repository: ${{ github.repository }}
+          tag: ${{ github.event.release.tag_name }}
+          file_glob: '*.bin'
+          output_dir: './firmware'
+
+      - name: List Downloaded Files
+        run: ls -la ./firmware
 
       - name: Copy Firmware Files
         run: |
           mkdir -p Flash2MQTT/firmware/${{ github.event.repository.name }}
-          cp *.bin Flash2MQTT/firmware/${{ github.event.repository.name }}/
+          cp ./firmware/*.bin Flash2MQTT/firmware/${{ github.event.repository.name }}/
 
       - name: Update variants.json
         run: |
