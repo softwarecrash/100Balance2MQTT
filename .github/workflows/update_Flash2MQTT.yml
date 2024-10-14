@@ -89,15 +89,19 @@ jobs:
           echo "Determining total number of desired variants..."
           while read file; do
             echo "Processing file: $file"
-            # Extract variant name
-            variant_part=$(echo "$file" | sed -E 's/^'"$FIRMWARE_NAME"'_//; s/(_'"${version}"')?\.bin$//')
-            variant_name="${variant_part%%_*}" # Extract the base variant name
-            echo "Extracted variant_name: $variant_name"
-            if [[ "$variant_name" == "d1_mini" || "$variant_name" == "esp01" ]]; then
-              echo "Variant $variant_name is desired. Incrementing total."
-              total=$((total + 1))
+            if [[ "$file" == *"_${version}.bin" ]]; then
+              echo "File matches current release version."
+              variant_part=$(echo "$file" | sed -E 's/^'"$FIRMWARE_NAME"'_//; s/_'"${version}"'\.bin$//')
+              variant_name="${variant_part}"
+              echo "Extracted variant_name: $variant_name"
+              if [[ "$variant_name" == "d1_mini" || "$variant_name" == "esp01_1m" ]]; then
+                echo "Variant $variant_name is desired. Incrementing total."
+                total=$((total + 1))
+              else
+                echo "Variant $variant_name is not desired."
+              fi
             else
-              echo "Variant $variant_name is not desired."
+              echo "File does not match current release version."
             fi
           done < bin_files.txt
           echo "Total desired variants: $total"
@@ -108,31 +112,35 @@ jobs:
           echo "Building variants.json..."
           while read file; do
             echo "Processing file: $file"
-            # Extract variant name
-            variant_part=$(echo "$file" | sed -E 's/^'"$FIRMWARE_NAME"'_//; s/(_'"${version}"')?\.bin$//')
-            variant_name="${variant_part%%_*}" # Extract the base variant name
-            echo "Extracted variant_name: $variant_name"
-            case "$variant_name" in
-              "d1_mini")
-                display_name="D1 Mini"
-                ;;
-              "esp01")
-                display_name="ESP-01"
-                ;;
-              *)
-                echo "Variant $variant_name is not desired. Skipping."
-                continue
-                ;;
-            esac
-            count=$((count + 1))
-            echo "Adding variant $display_name to variants.json."
-            echo '  {' >> variants.json
-            echo '    "displayName": "'"$display_name"'",' >> variants.json
-            echo '    "file": "https://all-solutions.github.io/Flash2MQTT/firmware/'"$FIRMWARE_NAME"'/'"$file"'"' >> variants.json
-            if [ $count -lt $total ]; then
-              echo '  },' >> variants.json
+            if [[ "$file" == *"_${version}.bin" ]]; then
+              echo "File matches current release version."
+              variant_part=$(echo "$file" | sed -E 's/^'"$FIRMWARE_NAME"'_//; s/_'"${version}"'\.bin$//')
+              variant_name="${variant_part}"
+              echo "Extracted variant_name: $variant_name"
+              case "$variant_name" in
+                "d1_mini")
+                  display_name="D1 Mini"
+                  ;;
+                "esp01_1m")
+                  display_name="ESP-01"
+                  ;;
+                *)
+                  echo "Variant $variant_name is not desired. Skipping."
+                  continue
+                  ;;
+              esac
+              count=$((count + 1))
+              echo "Adding variant $display_name to variants.json."
+              echo '  {' >> variants.json
+              echo '    "displayName": "'"$display_name"'",' >> variants.json
+              echo '    "file": "https://all-solutions.github.io/Flash2MQTT/firmware/'"$FIRMWARE_NAME"'/'"$file"'"' >> variants.json
+              if [ $count -lt $total ]; then
+                echo '  },' >> variants.json
+              else
+                echo '  }' >> variants.json
+              fi
             else
-              echo '  }' >> variants.json
+              echo "File does not match current release version."
             fi
           done < bin_files.txt
           echo ']' >> variants.json
@@ -162,4 +170,5 @@ jobs:
           git commit -m "Update firmware for ${{ github.event.repository.name }} to version $version"
           git pull --rebase origin main
           git push https://all-solutions:${{ secrets.CENTRAL_REPO_TOKEN }}@github.com/all-solutions/Flash2MQTT.git HEAD:main
+
 
